@@ -1,17 +1,17 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Grocery List – Home Grocery App</title><link rel="stylesheet" href="style.css"></head><body><main>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Grocery List – Home Grocery App</title><link rel="stylesheet" href="style.css"><link rel="manifest" href="manifest.json"><meta name="theme-color" content="#2e7d32"><link rel="apple-touch-icon" href="apple-touch-icon.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"></head><body><main>
 <h1>Grocery List</h1>
 <div class="bar"><input id="q" placeholder="Search item…"><select id="cat"><option value="">All categories</option></select>
 <label><input type="checkbox" id="only"> Selected only</label><button class="alt" id="clr">Clear selection</button></div>
 <div class="tbl"><table><thead><tr><th>Buy</th><th>Item</th><th>Unit</th><th>Price (USD)</th><th>Qty</th><th>Line total</th></tr></thead><tbody id="tb"></tbody></table></div>
-<div class="total"><span id="n"></span><span>Total spending: <b id="t"></b></span></div></main><script src="data.js"></script><script src="app.js"></script><script>let S=load();const cats=[...new Set(GROCERY.map(g=>g.c))];
+<div class="total"><span id="n"></span><span>Total spending: <b id="t"></b></span></div></main><script src="data.js"></script><script src="app.js"></script><script>recalc();let S=load();const cats=[...new Set(GROCERY.map(g=>g.c))];
 $("#cat").insertAdjacentHTML("beforeend",cats.map(c=>`<option>${esc(c)}</option>`).join(""));
 function upd(){const t=totals();$("#t").textContent=money(t.t);$("#n").textContent=t.n+" item(s) selected"}
 function draw(){const q=$("#q").value.toLowerCase(),c=$("#cat").value,on=$("#only").checked;let h="",last="";
 GROCERY.forEach((g,i)=>{const o=get(S,i);if(c&&g.c!==c||q&&!g.n.toLowerCase().includes(q)||on&&!o.buy)return;
 if(g.c!==last){h+=`<tr class="cat"><td colspan="6">${esc(g.c)}</td></tr>`;last=g.c}
-h+=`<tr class="${o.buy?"sel":""}" data-i="${i}"><td><input type="checkbox" data-f="buy" ${o.buy?"checked":""}></td><td>${esc(g.n)}</td><td>${esc(g.u)}</td><td><input type="number" step="0.05" min="0" data-f="price" value="${o.price}"></td><td><input type="number" step="1" min="0" data-f="qty" value="${o.qty}"></td><td class="lt">${o.buy?money(o.qty*o.price):"-"}</td></tr>`});
+h+=`<tr class="${o.buy?"sel":""}" data-i="${i}"><td><input type="checkbox" data-f="buy" ${o.buy?"checked":""}></td><td>${esc(g.n)}${o.mq>0?' <span class="tag">from meals</span>':""}</td><td>${esc(g.u)}</td><td><input type="number" step="0.05" min="0" data-f="price" value="${o.price}"></td><td><input type="number" step="0.1" min="0" data-f="qty" value="${o.qty}"></td><td class="lt">${o.buy?money(o.qty*o.price):"-"}</td></tr>`});
 $("#tb").innerHTML=h;upd()}
 $("#tb").addEventListener("input",e=>{const tr=e.target.closest("tr"),i=+tr.dataset.i,f=e.target.dataset.f;S[i]=S[i]||{};
 S[i][f]=f==="buy"?e.target.checked:parseFloat(e.target.value)||0;save(S);const o=get(S,i);tr.className=o.buy?"sel":"";tr.querySelector(".lt").textContent=o.buy?money(o.qty*o.price):"-";upd()});
 ["q","cat","only"].forEach(id=>$("#"+id).addEventListener("input",draw));
-$("#clr").onclick=()=>{Object.values(S).forEach(o=>o.buy=false);save(S);draw()};draw();</script></body></html>
+$("#clr").onclick=()=>{if(!confirm("Clear all ticks and chosen meals?"))return;S={};save(S);saveM({people:loadM().people,sel:{}});draw()};draw();</script></body></html>

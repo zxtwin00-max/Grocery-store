@@ -1,13 +1,13 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Summary – Home Grocery App</title><link rel="stylesheet" href="style.css"></head><body><main>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Summary – Home Grocery App</title><link rel="stylesheet" href="style.css"><link rel="manifest" href="manifest.json"><meta name="theme-color" content="#2e7d32"><link rel="apple-touch-icon" href="apple-touch-icon.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"></head><body><main>
 <h1>Summary & Total Spending</h1>
 <div class="grid"><div class="card"><div class="mu">Items selected</div><div class="stat" id="n"></div></div><div class="card"><div class="mu">Total spending (USD)</div><div class="stat" id="t"></div></div></div>
 <div class="bar"><button id="pr">Print</button><button class="alt" id="csv">Download CSV</button><button class="red" id="rs">Reset everything</button></div>
-<h3>By category</h3><div class="tbl"><table><thead><tr><th>Category</th><th>Spending</th></tr></thead><tbody id="c"></tbody></table></div>
-<h3>Shopping cart</h3><div class="tbl"><table><thead><tr><th>Item</th><th>Unit</th><th>Price</th><th>Qty</th><th>Total</th></tr></thead><tbody id="b"></tbody></table></div></main><script src="data.js"></script><script src="app.js"></script><script>const S=load(),T=totals();$("#n").textContent=T.n;$("#t").textContent=money(T.t);
+<h3>Meals chosen</h3><div class="card" id="ml"></div><h3>By category</h3><div class="tbl"><table><thead><tr><th>Category</th><th>Spending</th></tr></thead><tbody id="c"></tbody></table></div>
+<h3>Shopping cart</h3><div class="tbl"><table><thead><tr><th>Item</th><th>Unit</th><th>Price</th><th>Qty</th><th>Total</th></tr></thead><tbody id="b"></tbody></table></div></main><script src="data.js"></script><script src="app.js"></script><script>const MM=loadM(),ch=MEALS.filter((m,i)=>MM.sel[i]);$("#ml").innerHTML=ch.length?"<b>"+ch.length+" meal(s) for "+MM.people+" people:</b> "+ch.map(m=>esc(m.n)).join(", "):'<span class="mu">No meals chosen. Go to Meals.</span>';const S=load(),T=totals();$("#n").textContent=T.n;$("#t").textContent=money(T.t);
 $("#c").innerHTML=Object.entries(T.cat).map(([k,v])=>`<tr><td>${esc(k)}</td><td>${money(v)}</td></tr>`).join("")||'<tr><td colspan="2" class="mu">Nothing selected yet.</td></tr>';
 const rows=[];GROCERY.forEach((g,i)=>{const o=get(S,i);if(o.buy)rows.push([g.n,g.u,o.price,o.qty,o.price*o.qty,g.c])});
 $("#b").innerHTML=rows.map(r=>`<tr><td>${esc(r[0])}</td><td>${esc(r[1])}</td><td>${money(r[2])}</td><td>${r[3]}</td><td>${money(r[4])}</td></tr>`).join("")||'<tr><td colspan="5" class="mu">Cart is empty. Go to Grocery List.</td></tr>';
 $("#pr").onclick=()=>print();
 $("#csv").onclick=()=>{const l=[["Item","Unit","Price USD","Qty","Total USD","Category"],...rows].map(r=>r.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(",")).join("\n");
 const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([l],{type:"text/csv"}));a.download="my-grocery-list.csv";a.click()};
-$("#rs").onclick=()=>{if(confirm("Clear all selections, quantities and edited prices?")){save({});location.reload()}};</script></body></html>
+$("#rs").onclick=()=>{if(confirm("Clear all selections, quantities and edited prices?")){save({});localStorage.removeItem(KM);location.reload()}};</script></body></html>

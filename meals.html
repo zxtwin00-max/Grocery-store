@@ -1,7 +1,17 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>50 Meals – Home Grocery App</title><link rel="stylesheet" href="style.css"></head><body><main>
-<h1>50 Meals</h1><p class="mu">Tap a meal to see ingredients and how it is made.</p>
-<div class="bar"><input id="q" placeholder="Search meal or ingredient…"><select id="t"><option value="">All types</option></select><span class="mu" id="n"></span></div><div id="l"></div></main><script src="data.js"></script><script src="app.js"></script><script>const types=[...new Set(MEALS.map(m=>m.t))];$("#t").insertAdjacentHTML("beforeend",types.map(t=>`<option>${esc(t)}</option>`).join(""));
-function draw(){const q=$("#q").value.toLowerCase(),t=$("#t").value;const r=MEALS.filter(m=>(!t||m.t===t)&&(!q||(m.n+m.i).toLowerCase().includes(q)));
-$("#n").textContent=r.length+" meals";
-$("#l").innerHTML=r.map(m=>`<details><summary>${esc(m.n)}<span class="tag">${esc(m.t)}</span><span class="tag">Serves ${m.s}</span><span class="tag">${m.m} min</span></summary><p><b>Ingredients:</b> ${esc(m.i)}</p><p><b>How it is done:</b> ${esc(m.h)}</p></details>`).join("")}
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Meals – Home Grocery App</title><link rel="stylesheet" href="style.css"><link rel="manifest" href="manifest.json"><meta name="theme-color" content="#2e7d32"><link rel="apple-touch-icon" href="apple-touch-icon.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"></head><body><main>
+<h1>Meals</h1><p class="mu">Tick <b>Cook this</b> on any meal and its ingredients are added to your Grocery List automatically, scaled to the number of people.</p>
+<div class="bar"><label>People: <input type="number" id="pp" min="1" max="20" value="2" style="width:70px"></label>
+<input id="q" placeholder="Search meal or ingredient…"><select id="t"><option value="">All types</option></select>
+<button class="alt" id="clr">Clear chosen meals</button></div>
+<div class="card" id="info"></div><div id="l"></div></main><script src="data.js"></script><script src="app.js"></script><script>let MS=loadM();$("#pp").value=MS.people;
+const types=[...new Set(MEALS.map(m=>m.t))];$("#t").insertAdjacentHTML("beforeend",types.map(t=>`<option>${esc(t)}</option>`).join(""));
+const f2=x=>(Math.round(x*100)/100).toString();
+function info(){const t=totals(),c=Object.values(MS.sel).filter(Boolean).length;$("#info").innerHTML=`Meals chosen: <b>${c}</b> for <b>${MS.people}</b> people &nbsp;|&nbsp; Grocery total: <b style="color:#c62828">${money(t.t)}</b> &nbsp;|&nbsp; <a href="grocery.html">View Grocery List</a> &nbsp; <a href="summary.html">View Summary</a>`}
+function need(mi){const S=load();let c=0;const l=(NEEDS[mi]||[]).map(([gi,q])=>{const g=GROCERY[gi],st=STAPLE.includes(g.u);if(!st)c+=q*MS.people/2*get(S,gi).price;return esc(g.n)+" ("+(st?"1 "+g.u:f2(q*MS.people/2)+" "+g.u)+")"});return{l:l.join(", "),c}}
+function draw(){const q=$("#q").value.toLowerCase(),t=$("#t").value;
+const r=MEALS.map((m,i)=>({m,i})).filter(({m})=>(!t||m.t===t)&&(!q||(m.n+m.i).toLowerCase().includes(q)));
+$("#l").innerHTML=r.map(({m,i})=>{const n=need(i);return `<details><summary><input type="checkbox" class="pick" data-i="${i}" ${MS.sel[i]?"checked":""}> ${esc(m.n)}<span class="tag">${esc(m.t)}</span><span class="tag">${m.m} min</span></summary><p><b>Ingredients (original recipe):</b> ${esc(m.i)}</p><p><b>Shopping needs for ${MS.people} people:</b> ${n.l}</p><p class="mu">Estimated cost of main items: ${money(n.c)} (spices and pantry jars not counted)</p><p><b>How it is done:</b> ${esc(m.h)}</p></details>`}).join("");info()}
+$("#l").addEventListener("change",e=>{if(!e.target.classList.contains("pick"))return;MS.sel[e.target.dataset.i]=e.target.checked;saveM(MS);recalc();info()});
+$("#pp").addEventListener("input",e=>{MS.people=Math.max(1,parseInt(e.target.value)||2);saveM(MS);recalc();draw()});
+$("#clr").onclick=()=>{MS.sel={};saveM(MS);recalc();draw()};
 ["q","t"].forEach(id=>$("#"+id).addEventListener("input",draw));draw();</script></body></html>
