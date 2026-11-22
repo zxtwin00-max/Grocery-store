@@ -1,0 +1,7 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>50 Meals – Home Grocery App</title><link rel="stylesheet" href="style.css"></head><body><main>
+<h1>50 Meals</h1><p class="mu">Tap a meal to see ingredients and how it is made.</p>
+<div class="bar"><input id="q" placeholder="Search meal or ingredient…"><select id="t"><option value="">All types</option></select><span class="mu" id="n"></span></div><div id="l"></div></main><script src="data.js"></script><script src="app.js"></script><script>const types=[...new Set(MEALS.map(m=>m.t))];$("#t").insertAdjacentHTML("beforeend",types.map(t=>`<option>${esc(t)}</option>`).join(""));
+function draw(){const q=$("#q").value.toLowerCase(),t=$("#t").value;const r=MEALS.filter(m=>(!t||m.t===t)&&(!q||(m.n+m.i).toLowerCase().includes(q)));
+$("#n").textContent=r.length+" meals";
+$("#l").innerHTML=r.map(m=>`<details><summary>${esc(m.n)}<span class="tag">${esc(m.t)}</span><span class="tag">Serves ${m.s}</span><span class="tag">${m.m} min</span></summary><p><b>Ingredients:</b> ${esc(m.i)}</p><p><b>How it is done:</b> ${esc(m.h)}</p></details>`).join("")}
+["q","t"].forEach(id=>$("#"+id).addEventListener("input",draw));draw();</script></body></html>
